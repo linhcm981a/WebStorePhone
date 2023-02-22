@@ -1,9 +1,10 @@
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcrypt';
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 import User from "../user/models.js";
-import RevokedToken from '../../utils/models.js';
+import TokenModel from "../token/models.js";
 import hashPassword from "../services/bcrypt.js";
 import { isValidEmail, isValidUsername } from "../services/validation.js";
+import verifyToken from "../services/verifyToken.js";
 
 export const createNewUser = async (req, res) => {
   try {
@@ -44,35 +45,69 @@ export const createNewUser = async (req, res) => {
 };
 
 export const loginUser = async (req, res) => {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ message: "Invalid email or password" });
-    }
-    
-    const isMatch = await bcrypt.compare(password, user.password);
-    
-    if (!isMatch) {
-      return res.status(401).json({ message: "Invalid email or password" });
-    }
-    
-    const token = jwt.sign({ userId: user._id, email: user.email }, "my_secret_key", { expiresIn: "1h" });
-    res.json({ message: "Login successful",email, token });
-  };
+  const { email, password } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(401).json({ message: "Invalid email or password" });
+  }
 
-  export const logoutUser = async (req, res) => {
+  const isMatch = await bcrypt.compare(password, user.password);
+
+  if (!isMatch) {
+    return res.status(401).json({ message: "Invalid email or password" });
+  }
+
+  const token = jwt.sign(
+    { userId: user._id, email: user.email },
+    "my_secret_key",
+    { expiresIn: "1h" }
+  );
+
+  const expiresAt = new Date();
+  expiresAt.setHours(expiresAt.getHours() + 1); // Token expires in 1 hour
+
+  const newToken = new TokenModel({
+    token,
+    expiresAt,
+    userId: user._id,
+  });
+
+  await newToken.save();
+
+
+  res.json({ message: "Login successful", email, token });
+};
+
+export const logoutUser = async (req, res) => {
+  const authHeader = req.headers.authorization;
+
+  if (authHeader) {
+    const token = authHeader.split(" ")[1];
+
     try {
-      const authHeader = req.headers.authorization;
-      const token = authHeader && authHeader.split(' ')[1];
-      if (!token) {
-        return res.status(401).json({ message: 'Unauthorized' });
+      const decoded = verifyToken(token);
+
+      const tokenExists = await TokenModel.findOne({ token });
+      if (!tokenExists) {
+        return res.status(401).json({ message: "Token not found" });
       }
-      const revokedToken = new RevokedToken({ token });
-      await revokedToken.save();
-      res.json({ message: 'Logout successful' });
+      await TokenModel.deleteOne({ token });
+
+      res.json({ message: "Logout successful" });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Failed to logout user' });
+      return res.status(500).json({ message: "Server error" });
     }
-  };
-  
+  } else {
+    res.status(401).json({ message: "Unauthorized" });
+  }
+};
+
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({}, 'email username');
+    res.status(200).json({ users });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to get users" });
+  }
+};
