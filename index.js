@@ -1,5 +1,5 @@
-import express from 'express';
-import mongoose from 'mongoose';
+import express from "express";
+import mongoose from "mongoose";
 import cors from "cors";
 import bodyParser from "body-parser";
 import morgan from "morgan";
@@ -8,7 +8,7 @@ import userRouter from "./src/user/routes.js";
 
 dotenv.config();
 ///CONNECT DATABASE
-mongoose.set('strictQuery', false);
+mongoose.set("strictQuery", false);
 mongoose.connect(process.env.MONGODB_URL, () => {
   console.log("Connect to MongoDb");
 });
