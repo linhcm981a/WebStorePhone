@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import User from "../user/models.js";
+import RevokedToken from '../../utils/models.js';
 import hashPassword from "../services/bcrypt.js";
 import { isValidEmail, isValidUsername } from "../services/validation.js";
 
@@ -55,6 +56,23 @@ export const loginUser = async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
     
-    const token = jwt.sign({ userId: user._id, email: user.email }, "my_secret_key");
+    const token = jwt.sign({ userId: user._id, email: user.email }, "my_secret_key", { expiresIn: "1h" });
     res.json({ message: "Login successful",email, token });
   };
+
+  export const logoutUser = async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const token = authHeader && authHeader.split(' ')[1];
+      if (!token) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      const revokedToken = new RevokedToken({ token });
+      await revokedToken.save();
+      res.json({ message: 'Logout successful' });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Failed to logout user' });
+    }
+  };
+  
