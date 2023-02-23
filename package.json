@@ -5,7 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "nodemon index.js",
+    "create-admin": "node src/utils/create-admin.js"
   },
   "author": "",
   "license": "ISC",
