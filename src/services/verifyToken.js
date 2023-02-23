@@ -1,5 +1,4 @@
-import jwt from 'jsonwebtoken';
-
+import jwt from "jsonwebtoken";
 
 const verifyToken = (token) => {
   try {
@@ -8,6 +7,6 @@ const verifyToken = (token) => {
   } catch (error) {
     throw new Error("Invalid token");
   }
-}
+};
 
 export default verifyToken;

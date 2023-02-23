@@ -74,7 +74,6 @@ export const loginUser = async (req, res) => {
 
   await newToken.save();
 
-
   res.json({ message: "Login successful", email, token });
 };
 
@@ -104,10 +103,61 @@ export const logoutUser = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find({}, 'email username');
+    const users = await User.find({}, "email username");
     res.status(200).json({ users });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to get users" });
+  }
+};
+
+export const getAUsers = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id, "username email");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to get user" });
+  }
+};
+
+export const updateUsers = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const user = await User.findByIdAndUpdate(
+      id,
+      { username: req.body.username, email: req.body.email },
+      { new: true, select: "-password" }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to update user" });
+  }
+};
+
+export const deleteUsers = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    await user.remove();
+
+    res.status(200).json({ message: "User deleted" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to delete user" });
   }
 };
