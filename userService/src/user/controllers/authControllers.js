@@ -22,7 +22,7 @@ const authController = {
             const user = await newUser.save();
             res.status(200).json(user);
         } catch (err) {
-            res.status(500).json(err);
+            res.status(500).json({ message: "Register user not found" });
         }
     },
 
@@ -79,7 +79,7 @@ const authController = {
                 return res.status(200).json({ ...others, accessToken });
             }
         } catch (err) {
-            res.status(500).json(err);
+            res.status(500).json({ message: "Login user not found" });
         }
     },
 
@@ -119,7 +119,7 @@ const authController = {
         refreshTokens = refreshTokens.filter((token) => token !== req.body.token);
         res.clearCookie("refreshToken");
         return res.status(200).json("Logged out successfully!");
-    },
+    }
 };
 
 module.exports = authController;
