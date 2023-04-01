@@ -1,11 +1,11 @@
-import express from "express";
-import mongoose from "mongoose";
-import cors from "cors";
-import bodyParser from "body-parser";
-import morgan from "morgan";
-import dotenv from "dotenv";
-import userRouter from "./src/user/routes.js";
-
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const morgan = require("morgan");
+const dotenv = require("dotenv");
+const authRouter = require("./src/user/routes/auth");
+const userRouter = require("./src/user/routes/user");
 dotenv.config();
 ///CONNECT DATABASE
 mongoose.set("strictQuery", false);
@@ -19,7 +19,8 @@ app.use(cors());
 app.use(morgan("common"));
 
 ///ROUTES
-app.use("/", userRouter);
-app.listen(8000, () => {
+app.use("/v1/auth", authRouter);
+app.use("/v1/user", userRouter);
+app.listen(3000, () => {
   console.log("Server is running...");
 });
