@@ -6,6 +6,7 @@ const morgan = require("morgan");
 const dotenv = require("dotenv");
 const authRouter = require("./src/user/routes/auth");
 const userRouter = require("./src/user/routes/user");
+const cookieParser = require("cookie-parser");
 dotenv.config();
 ///CONNECT DATABASE
 mongoose.set("strictQuery", false);
@@ -20,6 +21,7 @@ mongoose
 
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(cors());
 app.use(morgan("common"));
