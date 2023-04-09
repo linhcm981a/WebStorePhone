@@ -4,7 +4,7 @@ const {
     verifyToken,
     verifyTokenAndUserAuthorization,
   } = require("../controllers/verifyToken");
-
+router.get("/:id", userController.getUser);
 router.get("/", verifyToken, userController.getAllUsers);
 router.delete(
   "/:id",
