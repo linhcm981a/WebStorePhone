@@ -20,12 +20,33 @@ const productController = {
   },
   getAllProduct: async (req, res) => {
     try {
-      const product = await Product.find();
+      const searchQuery = req.query.q;
+      let product;
+  
+      if (searchQuery) {
+        const regex = new RegExp(`.*${searchQuery}.*`, "i");
+        product = await Product.find({
+          $or: [
+            { nameProduct: regex },
+            { description: regex },
+            { category: regex }
+          ]
+        });
+      } else {
+        product = await Product.find();
+      }
+  
+      if (product.length === 0) {
+        return res.status(404).json({ message: "No products found" });
+      }
+  
       return res.status(200).json(product);
+  
     } catch (error) {
-      res.status(500).json({ message: "Get all product not found" });
+      res.status(500).json({ message: "Error occurred" });
     }
   },
+  
   getAProduct: async (req, res) => {
     try {
       const product = await Product.findById(req.params.id);
@@ -51,7 +72,8 @@ const productController = {
     } catch (error) {
       res.status(500).json({ message: "Delete a product not found" });
     }
-  },
+  },  
+  
 };
 
 module.exports = productController;
